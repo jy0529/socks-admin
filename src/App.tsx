@@ -1,25 +1,30 @@
-import { GitHubBanner, Refine, WelcomePage } from "@refinedev/core";
+import { Refine, Authenticated  } from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
-import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
+import { RefineKbarProvider } from "@refinedev/kbar";
 
 import { useNotificationProvider } from "@refinedev/antd";
 import "@refinedev/antd/dist/reset.css";
 
 import routerProvider, {
+  CatchAllNavigate,
   DocumentTitleHandler,
+  NavigateToResource,
   UnsavedChangesNotifier,
 } from "@refinedev/react-router";
-import { dataProvider, liveProvider } from "@refinedev/supabase";
+import { dataProvider } from "@refinedev/supabase";
 import { App as AntdApp } from "antd";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router";
 import authProvider from "./authProvider";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import { supabaseClient } from "./utility";
+import { SkusList } from "./pages/skus";
+import { ThemedLayout, AuthPage } from "@refinedev/antd";
+import { SkuCreate } from "./pages/skus/create";
+
 
 function App() {
   return (
     <BrowserRouter>
-      <GitHubBanner />
       <RefineKbarProvider>
         <ColorModeContextProvider>
           <AntdApp>
@@ -27,19 +32,44 @@ function App() {
               <Refine
                 notificationProvider={useNotificationProvider}
                 dataProvider={dataProvider(supabaseClient)}
-                liveProvider={liveProvider(supabaseClient)}
                 authProvider={authProvider}
                 routerProvider={routerProvider}
+                resources={[
+                  {
+                    name: 'skus',
+                    list: '/skus',
+                    create: '/skus/create',
+                  }
+                ]}
                 options={{
                   syncWithLocation: true,
-                  warnWhenUnsavedChanges: true,
-                  projectId: "WBqp14-xpeqyR-Yn5Ygq",
                 }}
               >
                 <Routes>
-                  <Route index element={<WelcomePage />} />
+                  <Route element={
+                    <Authenticated fallback={<CatchAllNavigate to="/login" />} key='authenticated'>
+                      <ThemedLayout>
+                        <Outlet />
+                      </ThemedLayout>
+                    </Authenticated>
+                  }>
+                    <Route path="/skus" element={<Outlet />}>
+                      <Route index element={<SkusList />}></Route>
+                      <Route path="/skus/create" element={<SkuCreate />}></Route>
+                    </Route>
+                  </Route>
+                  {/* Login 、Register、ForgotPassword、UpdatePassword */}
+                  <Route element={
+                    <Authenticated fallback={<Outlet />} key='authenticated1'>
+                      <NavigateToResource />
+                    </Authenticated>
+                  }>
+                    <Route path="/login" element={<AuthPage type="login" />}></Route>
+                    <Route path="/register" element={<AuthPage type="register" />}></Route>
+                    <Route path="/forgot-password" element={<AuthPage type="forgotPassword" />}></Route>
+                    <Route path="/update-passowrd" element={<AuthPage type="updatePassword" />}></Route>
+                  </Route>
                 </Routes>
-                <RefineKbar />
                 <UnsavedChangesNotifier />
                 <DocumentTitleHandler />
               </Refine>
