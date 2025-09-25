@@ -8,3 +8,5 @@ export interface ISku {
     tags: string[]
     created_at: string;
 }
+
+export type SkuUpsertType = "create" | "edit"

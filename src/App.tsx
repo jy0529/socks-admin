@@ -13,13 +13,14 @@ import routerProvider, {
 } from "@refinedev/react-router";
 import { dataProvider } from "@refinedev/supabase";
 import { App as AntdApp } from "antd";
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router";
 import authProvider from "./authProvider";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import { supabaseClient } from "./utility";
-import { SkusList } from "./pages/skus";
+import { SkuEdit, SkusList } from "./pages/skus";
 import { ThemedLayout, AuthPage } from "@refinedev/antd";
 import { SkuCreate } from "./pages/skus/create";
+import { Title } from "./components";
 
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
                     name: 'skus',
                     list: '/skus',
                     create: '/skus/create',
+                    edit: '/skus/edit/:id',
                   }
                 ]}
                 options={{
@@ -48,7 +50,7 @@ function App() {
                 <Routes>
                   <Route element={
                     <Authenticated fallback={<CatchAllNavigate to="/login" />} key='authenticated'>
-                      <ThemedLayout>
+                      <ThemedLayout Title={Title}>
                         <Outlet />
                       </ThemedLayout>
                     </Authenticated>
@@ -56,6 +58,7 @@ function App() {
                     <Route path="/skus" element={<Outlet />}>
                       <Route index element={<SkusList />}></Route>
                       <Route path="/skus/create" element={<SkuCreate />}></Route>
+                      <Route path="/skus/edit/:id" element={<SkuEdit />}></Route>
                     </Route>
                   </Route>
                   {/* Login 、Register、ForgotPassword、UpdatePassword */}
